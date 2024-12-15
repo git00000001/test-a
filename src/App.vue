@@ -1,169 +1,136 @@
 <script setup>
-import { ref, reactive, computed } from 'vue'
-import HelloWorld from './components/HelloWorld.vue'
-import { equip, base, person } from './assets/config'
+import { ref, computed } from 'vue'
+import { base, baseTags } from './assets/config'
 
-const zy = ref("")
-const fj = ref("")
-const wq = ref("")
-const hf = ref("")
-const ss = ref("")
-const zyList = reactive([])
-Object.keys(person).forEach(key => {
-  zyList.push({
-    name: key,
-    ...equip[key]
+const collocation = ref([])
+const tags = ref([...baseTags])
+
+const selectData = computed(() => {
+  const data = collocation.value.map(v => {
+    return tags.value.find(item => item.name === v) || { type: '' }
   })
-});
-const equipList = reactive([])
-Object.keys(equip).forEach(key => {
-  equipList.push({
-    name: key,
-    ...equip[key]
-  })
-});
-console.log(equipList, equip, base);
-const addAll = (arr, key) => {
-  let res = 0
-  arr.forEach(v => {
-    res += v[key] || 0
-  })
-  return res
-}
+  const 职业 = data.find(v => v.type.includes('职业')) || { 被动: [], 精通: '无', type: '' }
+  const 武器 = data.find(v => v.type === '武器') || { 被动: [] }
+  const 防具 = data.find(v => v.type.includes('防具')) || { 被动: [], type: '' }
+  const 首饰 = data.find(v => v.type === '首饰') || { 被动: [] }
+  const 护符 = data.find(v => v.type === '护符') || { 被动: [] }
+  return {
+    职业, 武器, 防具, 首饰, 护符
+  }
+})
+
 const allData = computed(() => {
-  const wqData = equip[wq.value] || {}
-  const fjData = equip[fj.value] || {}
-  const ssData = equip[ss.value] || {}
-  const hfData = equip[hf.value] || {}
-  const personData = person[zy.value] || {}
-  const dataList = [wqData, fjData, ssData, hfData, personData, base]
-  const isProficientIn = fjData.type && personData['精通'] && fjData.type.includes(personData['精通'])
-  return {
-    物理攻击力: addAll(dataList, '物理攻击力'),
-    独立攻击力: 600,
-    攻击力百分比: addAll(dataList, '攻击力百分比'),
-    力量: addAll(dataList, '力量') + (isProficientIn ? 123 : 0),
-    智力: addAll(dataList, '智力'),
-    力智加成: addAll(dataList, '力智加成'),
-    黄字: addAll(dataList, '黄字'),
-    白字: addAll(dataList, '白字'),
-    属强: addAll(dataList, '属强'),
-    暴击: addAll(dataList, '暴击'),
-    暴击率: addAll(dataList, '暴击率'),
-    暴击伤害: addAll(dataList, '暴击伤害'),
-    其它: addAll(dataList, '其它'),
-    技能攻击力: ((personData['技能攻击力'] || 0)) +
-      (((wqData['技能攻击力'] || 0) + 100) / 100 *
-        ((fjData['技能攻击力'] || 0) + 100) / 100 *
-        ((ssData['技能攻击力'] || 0) + 100) / 100 *
-        ((hfData['技能攻击力'] || 0) + 100) / 100 - 1) * 100,
-
-    甲精通: isProficientIn ? '是' : '否',
+  const { 职业, 武器, 防具, 首饰, 护符 } = selectData.value
+  const res = { ...base }
+  const arr = [武器, 防具, 首饰, 护符]
+  arr.forEach(v => {
+    v.被动.forEach(item => {
+      switch (item.name) {
+        case '技攻':
+          res[item.name] = res[item.name] * item.value
+          break;
+        default:
+          res[item.name] += item.value
+          break;
+      }
+    })
+  })
+  职业.被动.forEach(v => {
+    res[v.name] += v.value
+  })
+  const isProficientIn = 防具.type.includes(职业.精通)
+  if (isProficientIn) {
+    职业.精通加成.forEach(v => {
+      res[v.name] += v.value
+    })
   }
-})
-const personInfo = computed(() => {
-  return person[zy.value] || {}
-})
-
-const maxData = computed(() => {
-  const data = allData.value
-  const qw = (((data['暴击'] / 20.6 + data['暴击率']) * data['暴击伤害']) / 10000 + 1) * 10000
-  const bj = (data['暴击'] / 20.6 + data['暴击率']) / 100
-  let arr = []
-  while (arr.length < 10000) {
-    let demage = 10000
-    let isBJ = Math.random() <= bj
-    demage = isBJ ? demage * (1 + data['暴击伤害'] / 100) : demage
-    demage = (0.9 + Math.random() * 0.2) * demage
-    arr.push(demage)
-  }
- arr.sort((a,b)=>a-b)
+  console.log(arr, res, 职业, isProficientIn)
   return {
-    十把最强: arr[9000] / qw,
-    百把最强: arr[9900] / qw
+    ...res,
+    精通加成: isProficientIn ? '是' : '否',
   }
 })
 
 const scoreBlock = computed(() => {
   const data = allData.value
+  const denageType = selectData.value.职业.type.includes('魔法')
   const res = {
-    攻击区: (data['物理攻击力'] * (1 + data['攻击力百分比'] / 100) + data['独立攻击力']),
-    力量区: (data['力量'] * (1 + data['力智加成'] / 100) / 250 + 1),
+    攻击区: (data[!denageType ? '物理攻击力' : '魔法攻击力'] * (1 + data['攻击加成'] / 100) + data['独立攻击力']),
+    力量区: (data[!denageType ? '力量' : '智力'] * (1 + data['力智加成'] / 100) / 250 + 1),
     黄字区: (data['黄字'] / 100 + 1),
     白字区: (data['白字'] / 100 + 1),
-    属强区: ((data['属强'] * 0.45) / 100 + 1.05),
-    暴击区: (((data['暴击'] / 20.6 + data['暴击率']) * data['暴击伤害']) / 10000 + 1),
-    技攻区: (data['技能攻击力'] / 100 + 1),
+    属强区: ((data['属强'] * 0.45) / 100 + 1.05 - 0.45),
+    暴击区: (((data['暴击'] / 20.6 + data['暴击率']) * data['暴伤']) / 10000 + 1),
+    技攻区: (data['技攻'] / 100 + 1),
     其它: (data['其它'] / 100 + 1),
   }
+  if (data.属白 > 0) {
+    const 额外白字 = data.属白 * ((data['属强'] - 100) * 0.45 + 100) / 10000
+    res.白字区 += 额外白字
+    console.log(额外白字)
+  }
+  console.log(res)
+
   return res
 })
+
+const maxData = computed(() => {
+  const data = allData.value
+  const 技能组 = [20000, 10000, 10000, 10000, 1700, 1700, 1700, 1700, 1700, 1700, 1700, 1700, 1700, 1700, 10000,
+    4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000,
+    3600, 4000, 3600, 4000, 3600, 4000, 3600, 4000, 3600, 4000, 6500, 6500, 6500, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
+    400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400
+  ]
+  const qw = (((data['暴击'] / 20.6 + data['暴击率']) * data['暴伤']) / 10000 + 1)
+  let qwDemage = 0
+  技能组.forEach(percen => {
+    qwDemage += qw * percen
+  })
+  const bj = (data['暴击'] / 20.6 + data['暴击率']) / 100
+  let arr = []
+  while (arr.length < 10000) {
+    let t = 0
+    技能组.forEach(percen => {
+      let isBJ = Math.random() <= bj
+      let demage = isBJ ? percen * (1 + data['暴伤'] / 100) : percen
+      demage = (0.9 + Math.random() * 0.2) * demage
+      t += demage
+    })
+    arr.push(t)
+  }
+  arr.sort((a, b) => a - b)
+  return {
+    凹一十次: arr[9000] / qwDemage,
+    凹一百次: arr[9900] / qwDemage
+  }
+})
+
+
 const score = computed(() => {
   const data = scoreBlock.value
   const res = Object.keys(data).reduce((t, key) => {
-    if (key === '属强区') {
-      t.综合评分 = t.综合评分 * data[key]
-      t.世界boss = t.世界boss * (data[key] - 0.45)
-    } else {
-      t.综合评分 = t.综合评分 * data[key]
-      t.世界boss = t.世界boss * data[key]
-    }
-
+    t.世界boss = t.世界boss * data[key]
     return t
-  }, { 综合评分: 1, 世界boss: 1 })
+  }, { 世界boss: 1 })
   return res
 })
 
 </script>
 
 <template>
-  <div class="block">
-    <h3>当前职业：
-      <el-select v-model="zy" placeholder="Select" style="width: 240px">
-        <el-option v-for="item in zyList" :key="item.name" :label="item.name" :value="item.name" />
-      </el-select>
-    </h3>
-    <el-row style="margin-top: 20px;text-align: left;">
-      <el-col v-for="item in Object.keys(personInfo) " :key="item" :span="4">
-        <span>{{ item }}:</span>
-        <span style="color: red;padding-left: 5px;">{{ personInfo[item] }}</span>
-      </el-col>
-    </el-row>
-  </div>
 
+  <h3>当前搭配：</h3>
   <div class="block">
-    <h3>装备选择</h3>
-    <el-select v-model="wq" placeholder="Select" style="width: 240px">
-      <el-option v-for="item in equipList.filter(v => v.type === '武器')" :key="item.name" :label="item.name"
-        :value="item.name" />
-    </el-select>
-    <el-select v-model="fj" placeholder="Select" style="width: 240px">
-      <el-option v-for="item in equipList.filter(v => v.type.includes('防具'))" :key="item.name" :label="item.name"
-        :value="item.name" />
-    </el-select>
-    <el-select v-model="ss" placeholder="Select" style="width: 240px">
-      <el-option v-for="item in equipList.filter(v => v.type === '首饰')" :key="item.name" :label="item.name"
-        :value="item.name" />
-    </el-select>
-    <el-select v-model="hf" placeholder="Select" style="width: 240px">
-      <el-option v-for="item in equipList.filter(v => v.type === '护符')" :key="item.name" :label="item.name"
-        :value="item.name" />
+    <el-select v-model="collocation" multiple placeholder="Select">
+      <el-option v-for="item in tags" :key="item.name" :label="item.name" :value="item.name" />
     </el-select>
   </div>
 
-  <h3>基础数据展示</h3>
+  <h3>属性总览</h3>
   <el-row class="block">
     <el-col v-for="item in Object.keys(allData) " :key="item" :span="12">
       <span>{{ item }}:</span>
       <span style="color: red;padding-left: 5px;">{{ allData[item] }}</span>
-    </el-col>
-  </el-row>
-
-  <h3>加成展示</h3>
-  <el-row class="block">
-    <el-col v-for="item in Object.keys(scoreBlock) " :key="item" :span="12">
-      <span>{{ item }}:</span>
-      <span style="color: red;padding-left: 5px;">{{ scoreBlock[item].toFixed(2) }}</span>
     </el-col>
   </el-row>
 
@@ -176,7 +143,7 @@ const score = computed(() => {
     <span>{{ item }}:</span>
     <span style="color: red;padding-left: 5px;">{{ maxData[item].toFixed(2) }}倍期望</span>
   </el-col>
-
+  <el-button class="fixed" circle>+</el-button>
 </template>
 
 <style scoped>
@@ -186,5 +153,13 @@ h3 {
 
 .block {
   padding-bottom: 12px;
+}
+
+.fixed {
+  position: fixed;
+  right: 10px;
+  bottom: 20px;
+  font-size: 30px;
+  font-weight: 600;
 }
 </style>

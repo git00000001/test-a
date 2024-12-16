@@ -13,11 +13,19 @@
 
 
 #app {
-  padding: 16px 8px;
+  padding: 12px 10px;
+  font-size: 12px;
 }
 
-#app .el-select__wrapper {
+#app .set .el-select__wrapper {
   background-color: #242424;
   box-shadow: none;
   border: none;
+}
+
+#app .el-form-item{
+ margin-bottom: 4px;
+}
+#app .el-form-item__content{
+  line-height: 24px;
 }

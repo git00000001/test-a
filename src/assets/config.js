@@ -265,6 +265,18 @@ const baseTags = [
         ]
     },
     {
+        name: '千钧之羽',
+        type: '防具-轻甲',
+        被动: [
+            { name: '力量', value: 36 + 29 + 36 + 22 + 22 },
+            { name: '智力', value: 24 + 19 + 24 + 14 + 14 },
+            { name: '黄字', value: 10 + 14 + 10 + 8 + 33 },
+            { name: '技攻', value: 11 },
+            { name: '力智加成', value: 8 },
+            { name: '属强', value: 15 },
+        ]
+    },
+    {
         name: '团魂骨',
         type: '首饰',
         被动: [
@@ -287,7 +299,21 @@ const baseTags = [
             { name: '属强', value: 60 },
             { name: '属白', value: 10 },
             { name: '技攻', value: 22 },
-            { name: '其它', value: 0.5 },
+            { name: '其它', value: -2 },
+
+        ]
+    },
+    {
+        name: '波动',
+        type: '首饰',
+        被动: [
+            { name: '力量', value: 30 + 45 },
+            { name: '智力', value: 30 + 45 },
+            { name: '属强', value: 7 },
+            { name: '暴伤', value: 13 },
+            { name: '暴击', value: 120 },
+            { name: '技攻', value: 28 },
+            { name: '攻击加成', value: 28 },
 
         ]
     },
@@ -297,6 +323,18 @@ const baseTags = [
         被动: [
             { name: '力量', value: 396 },
             { name: '智力', value: 396 },
+
+        ]
+    },
+    {
+        name: '斗者之护符',
+        type: '护符',
+        被动: [
+            { name: '力量', value: 29 },
+            { name: '智力', value: 29 },
+            { name: '黄字', value: 5 },
+            { name: '力智加成', value: 5 },
+            { name: '白字', value: 5 },
 
         ]
     },

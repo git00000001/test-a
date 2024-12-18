@@ -187,6 +187,7 @@ watch(selectData, (newX) => {
 
 const updateRank = () => {
   let rank = JSON.parse(localStorage.rank || '{}')
+  rank[selectData.value.职业.name] = rank[selectData.value.职业.name] || {}
   rankList.value = Object.keys(rank[selectData.value.职业.name]).map(v => {
     return {
       name: v,

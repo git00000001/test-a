@@ -250,7 +250,7 @@ const baseTags = [
             { name: '力量', value: 50 },
             { name: '暴击率', value: 5 },
             { name: '暴伤', value: 60 },
-            { name: '力智加成', value: 60 },
+            { name: '力智加成', value: 22.5  },
         ]
     },
     {

@@ -189,9 +189,10 @@ const updateRank = () => {
   }).sort((a, b) => b.value - a.value)
 }
 const deleteTags = (index) => {
-  const tag = tags.value.splice(index, 1)
+  const tag = tags.value.splice(index, 1)[0]
   const local = JSON.parse(localStorage.tags || '{}')
   delete local[tag.name]
+  console.log(local, tag, local[tag.name])
   localStorage.tags = JSON.stringify(local)
 }
 </script>
@@ -209,11 +210,11 @@ const deleteTags = (index) => {
   <el-row class="block">
     <el-col v-for="item in Object.keys(allData) " :key="item" :span="12">
       <span>{{ item }}:</span>
-      <span style="color: red;padding-left: 5px;">{{Math.floor( allData[item]*100)/100}}</span>
+      <span style="color: red;padding-left: 5px;">{{ Math.floor(allData[item] * 100) / 100 }}</span>
     </el-col>
     <el-col :span="12">
       <span>精通加成:</span>
-      <span style="color: red;padding-left: 5px;">{{selectData.防具.type.includes(selectData.职业.精通)?'是':'否'}}</span>
+      <span style="color: red;padding-left: 5px;">{{ selectData.防具.type.includes(selectData.职业.精通) ? '是' : '否' }}</span>
     </el-col>
   </el-row>
 
@@ -263,7 +264,7 @@ const deleteTags = (index) => {
       <el-row class="info-block">
         <el-col v-for="item in rankList" :span="24">
           <span>{{ item.name }}:</span>
-          <span style="color: red;padding-left: 5px;">{{ item.value}}</span>
+          <span style="color: red;padding-left: 5px;">{{ item.value }}</span>
         </el-col>
       </el-row>
     </div>

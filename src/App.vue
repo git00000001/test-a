@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed ,watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { base, baseTags } from './assets/config'
 import { Edit } from '@element-plus/icons-vue'
 
@@ -20,7 +20,6 @@ const setTags = () => {
     if (!local[tag.name]) local[tag.name] = tag
   })
   tags.value = Object.values(local)
-  console.log(tags.value, local)
 }
 setTags()
 const addTags = () => {
@@ -55,9 +54,6 @@ const selectData = computed(() => {
   const res = {
     职业, 武器, 防具, 首饰, 护符
   }
-  Object.keys(res).forEach(v => {
-    console.log(v, res[v], res[v].name)
-  })
   return {
     职业, 武器, 防具, 首饰, 护符
   }
@@ -74,7 +70,7 @@ const allData = computed(() => {
     v.被动.forEach(item => {
       switch (item.name) {
         case '技攻':
-          res[item.name] = res[item.name] * item.value
+          res[item.name] = (res[item.name] + 100) * (item.value + 100) / 100 - 100
           break;
         default:
           res[item.name] += item.value
@@ -91,10 +87,8 @@ const allData = computed(() => {
       res[v.name] += v.value
     })
   }
-  console.log(arr, res, 职业, isProficientIn)
   return {
     ...res,
-    精通加成: isProficientIn ? '是' : '否',
   }
 })
 
@@ -114,9 +108,7 @@ const scoreBlock = computed(() => {
   if (data.属白 > 0) {
     const 额外白字 = data.属白 * ((data['属强'] - 100) * 0.45 + 100) / 10000
     res.白字区 += 额外白字
-    console.log(额外白字)
   }
-  console.log(res)
   return res
 })
 
@@ -145,7 +137,7 @@ const maxData = computed(() => {
     })
     arr.push(t)
   }
-  arr.sort((a, b) => b - a)
+  arr.sort((a, b) => a - b)
   return {
     凹一凹: arr[9000] / qwDemage,
     熬一熬: arr[9900] / qwDemage
@@ -166,6 +158,7 @@ const score = computed(() => {
     const percent = d1 / d2
     res.世界boss = res.世界boss * percent
   }
+  res.世界boss = Math.floor(res.世界boss)
   if (Object.values(selectData.value).every(v => v.name)) {
     let rank = JSON.parse(localStorage.rank || '{}')
     rank[selectData.value.职业.name] = rank[selectData.value.职业.name] || {}
@@ -182,7 +175,7 @@ const score = computed(() => {
 })
 
 watch(selectData, (newX) => {
-  if(newX.职业.name) updateRank()
+  if (newX.职业.name) updateRank()
 })
 
 const updateRank = () => {
@@ -216,7 +209,11 @@ const deleteTags = (index) => {
   <el-row class="block">
     <el-col v-for="item in Object.keys(allData) " :key="item" :span="12">
       <span>{{ item }}:</span>
-      <span style="color: red;padding-left: 5px;">{{ allData[item] }}</span>
+      <span style="color: red;padding-left: 5px;">{{Math.floor( allData[item]*100)/100}}</span>
+    </el-col>
+    <el-col :span="12">
+      <span>精通加成:</span>
+      <span style="color: red;padding-left: 5px;">{{selectData.防具.type.includes(selectData.职业.精通)?'是':'否'}}</span>
     </el-col>
   </el-row>
 
@@ -224,7 +221,7 @@ const deleteTags = (index) => {
   <el-row class="block">
     <el-col v-for="item in Object.keys(score) " :key="item" :span="24">
       <span>{{ item }}:</span>
-      <span style="color: red;padding-left: 5px;">{{ score[item].toFixed(2) }}</span>
+      <span style="color: red;padding-left: 5px;">{{ score[item] }}</span>
     </el-col>
     <el-col v-for="item in Object.keys(maxData) " :key="item" :span="24">
       <span>{{ item }}:</span>
@@ -266,7 +263,7 @@ const deleteTags = (index) => {
       <el-row class="info-block">
         <el-col v-for="item in rankList" :span="24">
           <span>{{ item.name }}:</span>
-          <span style="color: red;padding-left: 5px;">{{ item.value.toFixed(2) }}</span>
+          <span style="color: red;padding-left: 5px;">{{ item.value}}</span>
         </el-col>
       </el-row>
     </div>
